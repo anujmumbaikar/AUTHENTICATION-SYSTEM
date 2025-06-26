@@ -10,7 +10,7 @@ import { Button } from '../ui/button'
 import FormError from '../form-error'
 import FormSuccess from '../form-success'
 import { RegisterSchema } from '@/schemas'
-
+import axios from 'axios'
 function RegisterForm() {
   const [error,setError] = React.useState<string | null>(null)
   const [success,setSuccess] = React.useState<string | null>(null)
@@ -23,10 +23,22 @@ function RegisterForm() {
     }
   })
 
-  const onSubmit = (values: z.infer<typeof RegisterSchema>) => {
+  const onSubmit = async (values: z.infer<typeof RegisterSchema>) => {
     console.log('Form submitted with values:', values);
+    try {
+      const response = await axios.post('/api/register', values)
+      if( response.status === 200) {
+        setSuccess('Registration successful! Please check your email to verify your account.')
+        form.reset()
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data.error || 'An error occurred during registration.')
+      } else {
+        setError('An unexpected error occurred.')
+      }
+    }
   }
-
   return (
     <CardWrapper
         headerLabel="Create an account"
@@ -87,13 +99,13 @@ function RegisterForm() {
                 )}  
               />
             </div>
-            <FormError errorMessage='something went wrong'/>
-            <FormSuccess successMessage='Email sent!'/>
+            {error && <FormError errorMessage={error}/>}
+            {success && <FormSuccess successMessage={success} />}
             <Button
               type='submit'
               className='w-full'
             >
-              Login
+              Create an account
             </Button>
           </form>
         </Form>

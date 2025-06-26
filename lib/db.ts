@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 export const db = globalThis.prisma || new PrismaClient(); //just like we used
 //to do in mongoose declaration in types/types.d.ts as global variable

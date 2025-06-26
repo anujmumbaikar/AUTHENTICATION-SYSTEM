@@ -25,5 +25,5 @@ export async function POST(req: Request) {
     }
   })
 
-  return NextResponse.json({ message: 'User registered', user })
+  return NextResponse.json({message: 'Registration successful', user }, { status: 200 })
 }

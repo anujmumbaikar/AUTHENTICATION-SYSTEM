@@ -1,5 +1,4 @@
 import * as z from 'zod'
-import { minLength } from 'zod/v4-mini'
 
 export const LoginSchema = z.object({
     email:z.string().email({
