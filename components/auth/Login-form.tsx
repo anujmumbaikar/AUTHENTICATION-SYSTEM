@@ -33,7 +33,7 @@ function LoginForm() {
       const response = await axios.post('/api/email-verification', {
         email: values.email
       })
-      setSuccess(response.data.message || "Verification email sent successfully.")
+      setSuccess("Verification email sent successfully.")
     } catch (error) {
       if(axios.isAxiosError(error)){
         setError(error.response?.data?.error || "An error occurred while sending verification email.")
