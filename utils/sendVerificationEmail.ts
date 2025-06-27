@@ -126,3 +126,31 @@ export async function sendVerificationEmail(
     };
   }
 }
+
+export async function sendPasswordResetEmail(
+  email: string,
+  resetToken: string
+): Promise<ApiResponse> {
+  try {
+    const resetUrl = `http://localhost:3000/auth/new-password?token=${resetToken}`;
+    
+    const mailOptions = {
+      from: `"MysteryMessage" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: '🔐 Reset Your Password - MysteryMessage',
+      html: `
+        <p>Click the link below to reset your password:</p>
+        <a href="${resetUrl}">${resetUrl}</a>
+      `,
+    };
+    await transporter.sendMail(mailOptions);
+
+    return { success: true, message: 'Password reset email sent successfully!' };
+  } catch (error) {
+    console.error('Error sending password reset email:', error);
+    return {
+      success: false,
+      message: 'Error sending password reset email',
+    };
+  }
+}

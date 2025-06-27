@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation'
 import { useSearchParams } from 'next/navigation'
 import axios from 'axios'
 import FormSuccess from '../form-success'
+import Link from 'next/link'
 function LoginForm() {
   const [error,setError] = React.useState<string | null>(null)
   const [success,setSuccess] = React.useState<string | null>(null)
@@ -95,6 +96,11 @@ function LoginForm() {
                       type='password'
                       />
                     </FormControl>
+                    <Button size='sm' variant='link' asChild className='px-0 font-bold'>
+                      <Link href='/auth/reset'>
+                        Forgot Password?
+                      </Link>
+                    </Button>
                     <FormMessage />
                   </FormItem>    
                 )}  

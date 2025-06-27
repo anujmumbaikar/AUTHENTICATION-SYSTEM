@@ -26,14 +26,12 @@ export async function middleware(request: NextRequest) {
   return NextResponse.next()
 }
 export const config = {
-    // this matcher is basically not means 
-    // routes inside it is public or private
-    // it basically invokes the middleware to check the token
   matcher: [
     '/',
     '/auth/login',
     '/auth/register',
     '/dashboard',
     '/settings',
+    '/auth/reset'
   ],
 }
