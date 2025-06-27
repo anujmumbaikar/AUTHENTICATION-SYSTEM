@@ -16,7 +16,6 @@ import { useRouter } from 'next/navigation'
 
 function LoginForm() {
   const [error,setError] = React.useState<string | null>(null)
-  const [success,setSuccess] = React.useState<string | null>(null)
   const router = useRouter()
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
@@ -85,8 +84,7 @@ function LoginForm() {
                 )}  
               />
             </div>
-            <FormError errorMessage='something went wrong'/>
-            <FormSuccess successMessage='Email sent!'/>
+            {error && <FormError errorMessage={error}/>}
             <Button
               type='submit'
               className='w-full'

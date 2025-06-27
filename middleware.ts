@@ -9,15 +9,17 @@ export async function middleware(request: NextRequest) {
     token &&
     (
       url.pathname === '/' || 
-      url.pathname.startsWith('/login') ||
-      url.pathname.startsWith('/register') ||
-      url.pathname.startsWith('/verify')
+      url.pathname.startsWith('/auth/login') ||
+      url.pathname.startsWith('/auth/register')
     )
   ) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   if (!token && url.pathname.startsWith('/dashboard')) {
+    return NextResponse.redirect(new URL('/auth/login', request.url))
+  }
+  if (!token && url.pathname.startsWith('/settings')) {
     return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
@@ -32,5 +34,6 @@ export const config = {
     '/auth/login',
     '/auth/register',
     '/dashboard',
+    '/settings',
   ],
 }

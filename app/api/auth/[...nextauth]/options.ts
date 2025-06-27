@@ -2,8 +2,20 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "@/lib/db";
 import { comparePasswords } from "@/utils/compare";
+import GitHubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google";
+import { PrismaAdapter } from "@auth/prisma-adapter"
 export const authOptions: NextAuthOptions = {
+    adapter: PrismaAdapter(db),
     providers:[
+        GitHubProvider({
+            clientId: process.env.GITHUB_CLIENT_ID!,
+            clientSecret: process.env.GITHUB_CLIENT_SECRET!
+        }),
+        GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!
+        }),
         CredentialsProvider({
             id:"credentials",
             name:"Credentials",
@@ -47,13 +59,15 @@ export const authOptions: NextAuthOptions = {
     callbacks:{
         async jwt({ token, user}) {
             if(user){
-                token._id = user._id?.toString()
+                token._id = user.id?.toString()
+                token.role = user.role
             }
             return token
         },
         async session({ session,token }) {
-            if(token){
+            if(token.sub && session.user){
                 session.user._id = token._id
+                session.user.role = token.role;
             }
             return session
         }
