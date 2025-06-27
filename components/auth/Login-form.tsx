@@ -29,33 +29,46 @@ function LoginForm() {
       password: ''
     }
   })
-  const onSubmit = async(values: z.infer<typeof LoginSchema>) => {
-    try {
-      const response = await axios.post('/api/email-verification', {
-        email: values.email
-      })
-      setSuccess("Verification email sent successfully.")
-    } catch (error) {
-      if(axios.isAxiosError(error)){
-        setError(error.response?.data?.error || "An error occurred while sending verification email.")
-      } else {
-        setError("An unexpected error occurred.")
+  const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
+  setError(null);
+  setSuccess(null);
+
+  const result = await signIn('credentials', {
+    redirect: false,
+    email: values.email,
+    password: values.password
+  });
+
+  if (result?.error) {
+    if (result.error === "Email not verified") {
+      try {
+        const response = await axios.post('/api/email-verification', {
+          email: values.email
+        });
+
+        if (response.data.message === "Verification email sent") {
+          setSuccess("Email not verified. Verification email sent.");
+        } else if (response.data.message === "Email already verified") {
+          setError("Login failed. Please check your password.");
+        } else {
+          setError("Unexpected response while sending verification email.");
+        }
+      } catch (error: any) {
+        setError("Failed to send verification email.");
       }
-      return
+    } else {
+      setError(result.error);
     }
-    const result = await signIn('credentials',{
-      redirect:false,
-      email:values.email,
-      password:values.password
-    })
-    if(result?.error){
-      toast.error(result.error)
-    }
-    if(result?.ok){ 
-      toast.success("Login Successful")
-      router.replace('/dashboard')
-    }
+
+    return;
   }
+
+  // ✅ Login success
+  toast.success("Login Successful");
+  router.replace('/dashboard');
+};
+
+
   return (
     <CardWrapper
         headerLabel="Welcome Back"
