@@ -10,10 +10,14 @@ import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import FormError from '../form-error'
 import FormSuccess from '../form-success'
+import {signIn} from 'next-auth/react'
+import { toast } from 'react-hot-toast'
+import { useRouter } from 'next/navigation'
 
 function LoginForm() {
   const [error,setError] = React.useState<string | null>(null)
   const [success,setSuccess] = React.useState<string | null>(null)
+  const router = useRouter()
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
@@ -21,9 +25,19 @@ function LoginForm() {
       password: ''
     }
   })
-
-  const onSubmit = (values: z.infer<typeof LoginSchema>) => {
-    console.log('Form submitted with values:', values);
+  const onSubmit = async(values: z.infer<typeof LoginSchema>) => {
+    const result = await signIn('credentials',{
+      redirect:false,
+      email:values.email,
+      password:values.password
+    })
+    if(result?.error){
+      toast.error(result.error)
+    }
+    if(result?.ok){ 
+      toast.success("Login Successful")
+      router.replace('/dashboard')
+    }
   }
 
   return (

@@ -10,10 +10,12 @@ import { Button } from '../ui/button'
 import FormError from '../form-error'
 import FormSuccess from '../form-success'
 import { RegisterSchema } from '@/schemas'
+import { useRouter } from 'next/navigation'
 import axios from 'axios'
 function RegisterForm() {
   const [error,setError] = React.useState<string | null>(null)
   const [success,setSuccess] = React.useState<string | null>(null)
+  const router = useRouter()
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
@@ -30,6 +32,9 @@ function RegisterForm() {
       if( response.status === 200) {
         setSuccess('Registration successful! Please check your email to verify your account.')
         form.reset()
+        setTimeout(() => {
+          router.push('/auth/login')
+        }, 2000) 
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
