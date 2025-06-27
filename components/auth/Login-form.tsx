@@ -9,14 +9,15 @@ import { Form,FormControl,FormLabel,FormItem,FormMessage, FormField } from '../u
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import FormError from '../form-error'
-import FormSuccess from '../form-success'
 import {signIn} from 'next-auth/react'
 import { toast } from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
-
+import { useSearchParams } from 'next/navigation'
 function LoginForm() {
   const [error,setError] = React.useState<string | null>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const urlError = searchParams.get('error') === "OAuthAccountNotLinked" ? "This account is already linked with another provider. Please login with that provider." : ""
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
@@ -85,6 +86,7 @@ function LoginForm() {
               />
             </div>
             {error && <FormError errorMessage={error}/>}
+            {urlError && <FormError errorMessage={urlError}/>}
             <Button
               type='submit'
               className='w-full'

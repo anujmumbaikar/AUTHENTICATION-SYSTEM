@@ -48,12 +48,24 @@ export const authOptions: NextAuthOptions = {
                 }
             }
         })
-    ],
+    ], 
     pages:{
         signIn:"/auth/login",
+        error:"/auth/error",
     },
     session:{
         strategy:"jwt"
+    },
+    events:{
+        linkAccount: async ({ user, account, profile }) => {
+            await db.user.update({
+                where: { id: user.id },
+                data:{
+                    emailVerified:new Date(),
+                }
+            })
+        }
+
     },
     secret:process.env.NEXTAUTH_SECRET,
     callbacks:{
