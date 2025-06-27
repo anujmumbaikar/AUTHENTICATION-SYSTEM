@@ -16,7 +16,6 @@ export async function POST(request: Request) {
             );
         }
         const passwordResetToken = await generatePasswordResetToken(existingUser?.email);
-
         await sendPasswordResetEmail(
             existingUser.email,
             passwordResetToken.token

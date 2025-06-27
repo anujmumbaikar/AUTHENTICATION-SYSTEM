@@ -32,6 +32,7 @@ export const config = {
     '/auth/register',
     '/dashboard',
     '/settings',
-    '/auth/reset'
+    '/auth/reset',
+    '/auth/new-password'
   ],
 }

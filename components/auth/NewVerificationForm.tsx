@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import axios from 'axios'
 import FormError from '../form-error'
 import FormSuccess from '../form-success'
+
 function NewVerificationForm() {
     const searchParams = useSearchParams()
     const token = searchParams.get('token')
