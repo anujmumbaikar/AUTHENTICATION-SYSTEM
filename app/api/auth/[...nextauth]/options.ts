@@ -5,6 +5,7 @@ import { comparePasswords } from "@/utils/compare";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter"
+import { id } from "zod/v4/locales";
 export const authOptions: NextAuthOptions = {
     adapter: PrismaAdapter(db),
     providers:[
@@ -69,6 +70,19 @@ export const authOptions: NextAuthOptions = {
     },
     secret:process.env.NEXTAUTH_SECRET,
     callbacks:{
+        async signIn({ user, account, profile }) {
+            //allow oauth without email verification
+            if(account?.provider!=="credentials") return true;
+
+            const existingUser = await db.user.findUnique({
+                where: { id:user?.id }
+            });
+            
+            //prevent signin without email verification
+            if(!existingUser?.emailVerified) return false;
+            //TODO 2fa check
+            return true;
+        },
         async jwt({ token, user}) {
             if(user){
                 token._id = user.id?.toString()

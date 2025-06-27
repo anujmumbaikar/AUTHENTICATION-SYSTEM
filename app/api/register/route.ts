@@ -1,6 +1,8 @@
 import { db } from '@/lib/db'
 import { hashPassword } from '@/utils/hashing'
+import { generateVerificationToken } from '@/utils/tokens'
 import { NextResponse } from 'next/server'
+import { sendVerificationEmail } from '@/utils/sendVerificationEmail'
 
 export async function POST(req: Request) {
   const body = await req.json()
@@ -24,6 +26,11 @@ export async function POST(req: Request) {
       password: hashed
     }
   })
-
+  try {
+    const { token } = await generateVerificationToken(email);
+    await sendVerificationEmail(email, token);
+  } catch (err) {
+    console.error("Failed to send verification email", err);
+  }
   return NextResponse.json({message: 'Registration successful', user }, { status: 200 })
 }

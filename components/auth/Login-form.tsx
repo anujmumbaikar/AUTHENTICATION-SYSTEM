@@ -13,8 +13,11 @@ import {signIn} from 'next-auth/react'
 import { toast } from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import { useSearchParams } from 'next/navigation'
+import axios from 'axios'
+import FormSuccess from '../form-success'
 function LoginForm() {
   const [error,setError] = React.useState<string | null>(null)
+  const [success,setSuccess] = React.useState<string | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
   const urlError = searchParams.get('error') === "OAuthAccountNotLinked" ? "This account is already linked with another provider. Please login with that provider." : ""
@@ -26,6 +29,19 @@ function LoginForm() {
     }
   })
   const onSubmit = async(values: z.infer<typeof LoginSchema>) => {
+    try {
+      const response = await axios.post('/api/email-verification', {
+        email: values.email
+      })
+      setSuccess(response.data.message || "Verification email sent successfully.")
+    } catch (error) {
+      if(axios.isAxiosError(error)){
+        setError(error.response?.data?.error || "An error occurred while sending verification email.")
+      } else {
+        setError("An unexpected error occurred.")
+      }
+      return
+    }
     const result = await signIn('credentials',{
       redirect:false,
       email:values.email,
@@ -39,7 +55,6 @@ function LoginForm() {
       router.replace('/dashboard')
     }
   }
-
   return (
     <CardWrapper
         headerLabel="Welcome Back"
@@ -52,7 +67,7 @@ function LoginForm() {
           onSubmit={form.handleSubmit(onSubmit)}
           className='space-y-6'
           >
-            <div className='spcae-y-4'>
+            <div className='space-y-4'>
               <FormField
                 control={form.control}
                 name='email'
@@ -87,6 +102,7 @@ function LoginForm() {
             </div>
             {error && <FormError errorMessage={error}/>}
             {urlError && <FormError errorMessage={urlError}/>}
+            {success && <FormSuccess successMessage={success} />}
             <Button
               type='submit'
               className='w-full'
