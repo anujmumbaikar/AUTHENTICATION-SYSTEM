@@ -8,8 +8,8 @@
         return <div>Loading...</div>;
     }
    return (
-     <div>
-        Welcome !, {JSON.stringify(session?.user)}
+     <div className='bg-white p-10 rounded-2xl'>
+        hi
      </div>
    )
  }
