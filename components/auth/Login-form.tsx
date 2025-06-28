@@ -23,53 +23,62 @@ import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import FormSuccess from "../form-success";
 import Link from "next/link";
-import {
-  generateTwoFactorToken,
-  generateVerificationToken,
-} from "@/utils/tokens";
-import { sendTwoFactorTokenEmail } from "@/utils/sendVerificationEmail";
 
 function LoginForm() {
   const [showTwoFactor, setShowTwoFactor] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
+  const [isLoading, setIsLoading] = React.useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlError =
     searchParams.get("error") === "OAuthAccountNotLinked"
       ? "This account is already linked with another provider. Please login with that provider."
       : "";
+
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
       email: "",
       password: "",
+      code: "",
     },
   });
+
   const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
     setError(null);
     setSuccess(null);
+    setIsLoading(true);
 
-    if (showTwoFactor) {
-      // 🔐 User is submitting 2FA code
-      try {
+    try {
+      // If we're in 2FA mode, verify the code
+      if (showTwoFactor) {
         const response = await axios.post("/api/auth/2fa-check", {
           email: values.email,
           code: values.code,
         });
 
         if (response.status === 200) {
-          toast.success("2FA verification successful");
-        } else {
-          setError(response.data?.error || "2FA verification failed");
-          return;
+          // 2FA verified, now proceed with NextAuth sign in
+          const result = await signIn("credentials", {
+            redirect: false,
+            email: values.email,
+            password: values.password,
+          });
+
+          if (result?.error) {
+            setError(result.error);
+            return;
+          }
+
+          if (result?.ok) {
+            form.reset();
+            setSuccess("Login successful. Redirecting to dashboard...");
+            router.replace("/dashboard");
+          }
         }
-      } catch (error: any) {
-        setError("2FA verification failed.");
-        return;
-      }
-    } else {
-      try {
+      } else {
+        // First, check if 2FA is required
         const response = await axios.post("/api/auth/2fa-check", {
           email: values.email,
         });
@@ -77,47 +86,54 @@ function LoginForm() {
         if (response.data.twoFactor) {
           setShowTwoFactor(true);
           setSuccess("2FA code sent to your email");
-          return; // ⛔ Wait for next submit with code
+          return;
         }
-      } catch (error) {
-        setError("2FA check failed.");
-        return;
-      }
-    }
 
-    const result = await signIn("credentials", {
-      redirect: false,
-      email: values.email,
-      password: values.password,
-    });
-    console.log(result?.error);
+        // If no 2FA required, proceed with normal login
+        const result = await signIn("credentials", {
+          redirect: false,
+          email: values.email,
+          password: values.password,
+        });
 
-    if (result?.error) {
-      if (result.error === "Email not verified") {
-        try {
-          const response = await axios.post("/api/email-verification", {
-            email: values.email,
-          });
-          if (response.data.message === "Verification email sent") {
-            setSuccess("Email not verified. Verification email sent.");
-          } else if (response.data.message === "Email already verified") {
-            setError("Login failed. Please check your password.");
+        if (result?.error) {
+          if (result.error === "Email not verified") {
+            try {
+              const response = await axios.post("/api/email-verification", {
+                email: values.email,
+              });
+              if (response.data.message === "Verification email sent") {
+                setSuccess("Email not verified. Verification email sent.");
+              } else if (response.data.message === "Email already verified") {
+                setError("Login failed. Please check your password.");
+              } else {
+                setError("Unexpected response while sending verification email.");
+              }
+            } catch (error: any) {
+              setError("Failed to send verification email.");
+            }
           } else {
-            setError("Unexpected response while sending verification email.");
+            setError(result.error);
           }
-        } catch (error: any) {
-          setError("Failed to send verification email.");
+          return;
         }
-      } else {
-        setError(result.error);
+
+        if (result?.ok) {
+          form.reset();
+          setSuccess("Login successful. Redirecting to dashboard...");
+          router.replace("/dashboard");
+        }
       }
-      return;
+    } catch (error: any) {
+      console.error("Login error:", error);
+      if (error.response?.data?.error) {
+        setError(error.response.data.error);
+      } else {
+        setError("An error occurred during login. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
     }
-    if (result?.ok) {
-      form.reset();
-      setSuccess("Login successful. Redirecting to dashboard...");
-    }
-    router.replace("/dashboard");
   };
 
   return (
@@ -138,7 +154,11 @@ function LoginForm() {
                   <FormItem>
                     <FormLabel>Two-Factor Authentication Code</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Enter your 2FA code" />
+                      <Input 
+                        {...field} 
+                        placeholder="Enter your 2FA code"
+                        disabled={isLoading}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -154,7 +174,11 @@ function LoginForm() {
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Enter your email" />
+                        <Input 
+                          {...field} 
+                          placeholder="Enter your email"
+                          disabled={isLoading}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -171,6 +195,7 @@ function LoginForm() {
                           {...field}
                           placeholder="Enter your password"
                           type="password"
+                          disabled={isLoading}
                         />
                       </FormControl>
                       <Button
@@ -191,9 +216,24 @@ function LoginForm() {
           {error && <FormError errorMessage={error} />}
           {urlError && <FormError errorMessage={urlError} />}
           {success && <FormSuccess successMessage={success} />}
-          <Button type="submit" className="w-full">
-            {showTwoFactor ? "Verify Code" : "Login"}
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? "Loading..." : showTwoFactor ? "Verify Code" : "Login"}
           </Button>
+          {showTwoFactor && (
+            <Button
+              type="button"
+              variant="link"
+              className="w-full"
+              onClick={() => {
+                setShowTwoFactor(false);
+                setError(null);
+                setSuccess(null);
+                form.setValue("code", "");
+              }}
+            >
+              Back to Login
+            </Button>
+          )}
         </form>
       </Form>
     </CardWrapper>
