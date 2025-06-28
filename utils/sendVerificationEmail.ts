@@ -154,3 +154,31 @@ export async function sendPasswordResetEmail(
     };
   }
 }
+
+export const sendTwoFactorTokenEmail = async (
+  email: string,
+  twoFactorToken: string
+): Promise<ApiResponse> => {
+  try {
+    const mailOptions = {
+      from: `"MysteryMessage" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: '🔐 Your Two-Factor Authentication Code - MysteryMessage',
+      html: `
+        <p>Your two-factor authentication code is:</p>
+        <h2 style="font-size: 24px; color: #667eea;">${twoFactorToken}</h2>
+        <p>This code is valid for 10 minutes.</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return { success: true, message: 'Two-factor authentication email sent successfully!' };
+  } catch (error) {
+    console.error('Error sending two-factor token email:', error);
+    return {
+      success: false,
+      message: 'Error sending two-factor token email',
+    };
+  }
+}

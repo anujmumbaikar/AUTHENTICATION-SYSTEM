@@ -6,6 +6,8 @@ import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { id } from "zod/v4/locales";
+import { getTwoFactorConfirmationByUserId } from "@/utils/two-factor-confirmation";
+
 export const authOptions: NextAuthOptions = {
     adapter: PrismaAdapter(db),
     providers:[
@@ -77,10 +79,21 @@ export const authOptions: NextAuthOptions = {
             const existingUser = await db.user.findUnique({
                 where: { id:user?.id }
             });
-            
-            //prevent signin without email verification
             if(!existingUser?.emailVerified) return false;
-            //TODO 2fa check
+            
+            //2FA check
+            if(existingUser.isTwoFactorEnabled){
+                const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(existingUser.id);
+                if(!twoFactorConfirmation){
+                    return false;
+                }
+
+                //Delete two factor confirmation for nect sign in.
+                await db.twoFactorConfirmation.delete({
+                    where: { id: twoFactorConfirmation.id }
+                });
+            }
+            
             return true;
         },
         async jwt({ token, user}) {

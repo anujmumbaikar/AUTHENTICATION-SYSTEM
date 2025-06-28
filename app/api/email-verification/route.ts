@@ -1,7 +1,8 @@
 import { db } from "@/lib/db";
-import { sendVerificationEmail } from "@/utils/sendVerificationEmail";
-import { generateVerificationToken } from "@/utils/tokens";
+import { sendTwoFactorTokenEmail, sendVerificationEmail } from "@/utils/sendVerificationEmail";
+import { generateTwoFactorToken, generateVerificationToken } from "@/utils/tokens";
 import { NextResponse } from "next/server";
+
 export async function POST(req: Request) {
   try {
     const { email } = await req.json();
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
     if (existingUser.emailVerified) {
       return NextResponse.json({ message: "Email already verified" }, { status: 200 });
     }
-
+    
     try {
       const { token } = await generateVerificationToken(email);
       await sendVerificationEmail(email, token);

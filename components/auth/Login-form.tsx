@@ -33,6 +33,29 @@ function LoginForm() {
   setError(null);
   setSuccess(null);
 
+  try {
+    const response = await axios.post('/api/email-verification', {
+      email: values.email
+    });
+    const msg = response.data.message;
+    if (msg === "Verification email sent") {
+      setSuccess("Verification email sent. Please check your inbox.");
+    } else if (msg === "Email already verified") {
+      setSuccess("Email already verified. You can log in.");
+    } else {
+      setError("Unexpected response from server.");
+    }
+
+  } catch (error: any) {
+    if (axios.isAxiosError(error)) {
+      setError(error.response?.data?.error || "Failed to send verification email.");
+    } else {
+      setError("Unexpected error occurred.");
+    }
+    return;
+  }
+
+  // Proceed to login only if email is verified
   const result = await signIn('credentials', {
     redirect: false,
     email: values.email,
@@ -40,34 +63,14 @@ function LoginForm() {
   });
 
   if (result?.error) {
-    if (result.error === "Email not verified") {
-      try {
-        const response = await axios.post('/api/email-verification', {
-          email: values.email
-        });
-
-        if (response.data.message === "Verification email sent") {
-          setSuccess("Email not verified. Verification email sent.");
-        } else if (response.data.message === "Email already verified") {
-          setError("Login failed. Please check your password.");
-        } else {
-          setError("Unexpected response while sending verification email.");
-        }
-      } catch (error: any) {
-        setError("Failed to send verification email.");
-      }
-    } else {
-      setError(result.error);
-    }
-
-    return;
+    toast.error(result.error);
   }
 
-  // ✅ Login success
-  toast.success("Login Successful");
-  router.replace('/dashboard');
+  if (result?.ok) {
+    toast.success("Login Successful");
+    router.replace('/dashboard');
+  }
 };
-
 
   return (
     <CardWrapper
