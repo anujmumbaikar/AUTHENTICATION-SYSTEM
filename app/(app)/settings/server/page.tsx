@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card"
 
 function page() {
-    const { data: session, status } = useSession();
+    const { data: session, status} = useSession();
 
     if (status === "loading") {
         return (
