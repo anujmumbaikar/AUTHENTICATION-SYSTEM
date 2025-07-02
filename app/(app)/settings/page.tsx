@@ -38,16 +38,23 @@ function Page() {
         return
       }
       const res = await axios.put(`/api/settings?userId=${userId}`, {
-        values,
-      }).then((response) => {
-        if (response.status === 200) {
-          setSuccess('Updated successfully!')
-          setError(null)
-          form.reset()
-        }
+        name: values.name,
       })
-    } catch (error) {
-      setError('Failed to update name. Please try again later.')
+      if (res.status === 200) {
+        setSuccess('Settings updated successfully')
+        setError(null)
+        form.reset()
+      } else {
+        setError('Failed to update settings')
+        setSuccess(null)
+      }
+    } catch (err) {
+      console.error('Error updating settings:', err)
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.error || 'An error occurred while updating settings')
+      } else {
+        setError('An unexpected error occurred')
+      }
       setSuccess(null)
     }
   }

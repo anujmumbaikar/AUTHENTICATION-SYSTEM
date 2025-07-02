@@ -79,7 +79,6 @@ function page() {
                         {session?.user?.isTwoFactorEnabled ? "Yes" : "No"}
                     </p>
                 </div>
-                {JSON.stringify(session)}
             </CardContent>
         </Card>
     )
