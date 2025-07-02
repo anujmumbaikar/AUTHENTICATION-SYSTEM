@@ -5,7 +5,6 @@ import { comparePasswords } from "@/utils/compare";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter"
-import { id } from "zod/v4/locales";
 import { getTwoFactorConfirmationByUserId } from "@/utils/two-factor-confirmation";
 
 export const authOptions: NextAuthOptions = {
@@ -55,6 +54,7 @@ export const authOptions: NextAuthOptions = {
     pages:{
         signIn:"/auth/login",
         error:"/auth/error",
+        signOut:"/auth/login",
     },
     session:{
         strategy:"jwt"
@@ -99,6 +99,7 @@ export const authOptions: NextAuthOptions = {
             if(user){
                 token._id = user.id?.toString()
                 token.role = user.role
+                token.isTwoFactorEnabled = user.isTwoFactorEnabled;
             }
             return token
         },
@@ -106,6 +107,7 @@ export const authOptions: NextAuthOptions = {
             if(token.sub && session.user){
                 session.user._id = token._id
                 session.user.role = token.role;
+                session.user.isTwoFactorEnabled = token.isTwoFactorEnabled;
             }
             return session
         }

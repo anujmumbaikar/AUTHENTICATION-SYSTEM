@@ -33,6 +33,7 @@ export const config = {
     '/dashboard',
     '/settings',
     '/auth/reset',
-    '/auth/new-password'
+    '/auth/new-password',
+    '/settings/server',
   ],
 }

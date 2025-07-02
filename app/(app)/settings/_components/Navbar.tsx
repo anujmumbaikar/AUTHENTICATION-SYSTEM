@@ -3,6 +3,7 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import UserButton from '@/components/auth/user-button';
 
 function Navbar() {
     const pathname = usePathname();
@@ -11,13 +12,29 @@ function Navbar() {
         <div className='flex gap-x-2'>
             <Button
             asChild
-            variant={pathname === '/server' ? 'default' : 'outline'}
+            variant={pathname === '/settings/server' ? 'default' : 'outline'}
             >
-                <Link href='/server'>
+                <Link href='/settings/server'>
                 Server
                 </Link>
             </Button>
+            <Button
+            asChild
+            variant={pathname === '/settings/client' ? 'default' : 'outline'}
+            >
+                <Link href='/settings/client'>
+                Client
+                </Link>
+            </Button>
 
+            <Button
+            asChild
+            variant={pathname === '/settings/Admin' ? 'default' : 'outline'}
+            >
+                <Link href='/settings/Admin'>
+                Admin
+                </Link>
+            </Button>
             <Button
             asChild
             variant={pathname === '/settings' ? 'default' : 'outline'}
@@ -26,26 +43,8 @@ function Navbar() {
                 Settings
                 </Link>
             </Button>
-
-            <Button
-            asChild
-            variant={pathname === '/client' ? 'default' : 'outline'}
-            >
-                <Link href='/client'>
-                Client
-                </Link>
-            </Button>
-
-            <Button
-            asChild
-            variant={pathname === '/Admin' ? 'default' : 'outline'}
-            >
-                <Link href='/Admin'>
-                Admin
-                </Link>
-            </Button>
         </div>
-        <p>User Button</p>
+        <UserButton/>
     </nav>
   )
 }
