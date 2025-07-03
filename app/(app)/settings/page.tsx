@@ -20,14 +20,14 @@ import {
 } from '@/components/ui/form'
 
 function Page() {
-  const { data: session} = useSession()
+  const { data: session,update} = useSession()
   const [error, setError] = React.useState<string | null>(null)
   const [success, setSuccess] = React.useState<string | null>(null)
 
   const form = useForm<z.infer<typeof settingsSchema>>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      name: '',
+      name: session?.user?.name || '',
     }
   })
   const handleUpdate = async (values: z.infer<typeof settingsSchema>) => {
@@ -41,15 +41,13 @@ function Page() {
         name: values.name,
       })
       if (res.status === 200) {
+        await update()
         setSuccess('Settings updated successfully')
-        setError(null)
-        form.reset()
       } else {
         setError('Failed to update settings')
         setSuccess(null)
       }
     } catch (err) {
-      console.error('Error updating settings:', err)
       if (axios.isAxiosError(err)) {
         setError(err.response?.data?.error || 'An error occurred while updating settings')
       } else {

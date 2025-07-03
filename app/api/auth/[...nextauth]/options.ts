@@ -99,8 +99,6 @@ export const authOptions: NextAuthOptions = {
                 token._id = user.id?.toString()
                 token.role = user.role
                 token.isTwoFactorEnabled = user.isTwoFactorEnabled;
-                token.name = user.name;
-                token.email = user.email;
             }
             return token
         },
@@ -109,8 +107,6 @@ export const authOptions: NextAuthOptions = {
                 session.user._id = token._id
                 session.user.role = token.role;
                 session.user.isTwoFactorEnabled = token.isTwoFactorEnabled;
-                session.user.name = token.name;
-                session.user.email = token.email;
             }
             return session
         }

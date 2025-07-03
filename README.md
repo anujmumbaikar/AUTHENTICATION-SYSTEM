@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🔐 Advanced Authentication System
 
-## Getting Started
+A full-featured **authentication system** built with **Next.js**, **NextAuth**, **PostgreSQL (NeonDB)**, **Prisma**, **Zod**, **Nodemailer**, and **ShadCN** UI.  
+It supports:
 
-First, run the development server:
+- ✅ Email Verification (via Gmail)
+- 🔐 Password Reset (Secure Token Flow)
+- 📩 OTP-based 2FA (Two-Factor Authentication)
+- 📦 Session & JWT Management
+- 🌐 OAuth (Google & GitHub)
+- 🛡️ Credentials Login (with secure email verification)
+- 🔒 OAuth users are treated as verified by default
+- 🔏 Passwords are **stored only for OAuth users**, not for credential users.
 
+---
+## Workflow 
+1.OAuth Users: Users logging in with Google or GitHub are automatically marked as verified. No password is stored initially.
+2.Credentials Users: Must verify their email via a Gmail verification link before they can log in. Only after successful verification is the user allowed to set a password and access the app.
+3.JWT & Sessions: Fully handled via NextAuth.js (you can choose between jwt or database sessions).
+4.OTP/2FA: 2FA via email-based OTP is available and can be enabled per user. This adds an extra layer of security to the login process.
+5.Forgot Password: Users who forget their password can initiate a password reset flow.A Gmail verification link is sent to their email to securely update their password.
+
+## Tech Stack
+- **Next.js** (App Router)
+- **NextAuth.js** (Auth Provider)
+- **PostgreSQL** (via NeonDB)
+- **Prisma** (ORM)
+- **Zod** (Validation)
+- **Nodemailer** (Gmail-based email delivery)
+- **ShadCN** (UI components)
+
+---
+
+## Features
+
+| Feature                       | Description                                                                 |
+|------------------------------|-----------------------------------------------------------------------------|
+| Email Verification           | Sends a Gmail-based verification link to new users                         |
+| Password Reset               | Secure password reset flow via email token                                 |
+| 2FA (OTP)                    | Optional 2FA using OTPs sent via email                                      |
+| Session & JWT                | NextAuth-based session and JWT management                                   |
+| OAuth (GitHub, Google)       | Login via GitHub and Google with built-in email verification                |
+| Credentials Login            | Email/password login (requires verification first)                          |
+| Gmail Integration            | All emails sent securely via Gmail (Nodemailer)                            |
+
+---
+
+## Environment Variables
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Database (NeonDB URL)
+DATABASE_URL="postgresql://<username>:<password>@<host>/<db>?sslmode=require"
+# NextAuth secret (generate one with: openssl rand -base64 32)
+NEXTAUTH_SECRET="your-secret-key"
+# GitHub OAuth
+GITHUB_CLIENT_ID="your-github-client-id"
+GITHUB_CLIENT_SECRET="your-github-client-secret"
+# Google OAuth
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+# Gmail (for nodemailer)
+EMAIL_USER="your-gmail@gmail.com"
+EMAIL_PASS="your-app-password" # Use Gmail App Password
+#NOTE - For EMAIL_PASS, make sure you've enabled 2FA in your Gmail account and generated an App Password.
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+# Prisma setup 
+```bash
+npx prisma generate
+npx prisma db push
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+#To get GUI 
+npx prisma studio
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
+## 🧪 Installation
+```bash
+git clone https://github.com/yourusername/advanced-auth-system.git
 
-To learn more about Next.js, take a look at the following resources:
+cd advanced-auth-system
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+npm install # or yarn / pnpm install
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+npm run dev
+```
