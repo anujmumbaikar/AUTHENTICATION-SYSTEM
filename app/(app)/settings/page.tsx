@@ -41,7 +41,13 @@ function Page() {
         name: values.name,
       })
       if (res.status === 200) {
-        await update()
+        await update({
+          ...session,
+          user: {
+            ...session?.user,
+            name: values.name,
+          }
+        })
         setSuccess('Settings updated successfully')
       } else {
         setError('Failed to update settings')

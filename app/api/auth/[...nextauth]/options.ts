@@ -94,11 +94,15 @@ export const authOptions: NextAuthOptions = {
             
             return true;
         },
-        async jwt({ token, user}) {
+        async jwt({ token, user,trigger, session }) {
+            if(trigger === "update"){
+                return { ...token, ...session.user };
+            }
             if(user){
                 token._id = user.id?.toString()
                 token.role = user.role
                 token.isTwoFactorEnabled = user.isTwoFactorEnabled;
+                token.name = user.name;
             }
             return token
         },
@@ -107,6 +111,7 @@ export const authOptions: NextAuthOptions = {
                 session.user._id = token._id
                 session.user.role = token.role;
                 session.user.isTwoFactorEnabled = token.isTwoFactorEnabled;
+                session.user.name = token.name;
             }
             return session
         }
