@@ -6,6 +6,7 @@ import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { getTwoFactorConfirmationByUserId } from "@/utils/two-factor-confirmation";
+import { getAccountByUseId } from "@/utils/getAccount";
 export const authOptions: NextAuthOptions = {
     adapter: PrismaAdapter(db),
     providers:[
@@ -99,10 +100,13 @@ export const authOptions: NextAuthOptions = {
                 return { ...token, ...session.user };
             }
             if(user){
+                const existingAccount = await getAccountByUseId(user.id);
                 token._id = user.id?.toString()
                 token.role = user.role
                 token.isTwoFactorEnabled = user.isTwoFactorEnabled;
                 token.name = user.name;
+                token.isOauth = !!existingAccount;
+                // !! means convert from truthy/falsy to boolean
             }
             return token
         },
@@ -112,6 +116,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.role = token.role;
                 session.user.isTwoFactorEnabled = token.isTwoFactorEnabled;
                 session.user.name = token.name;
+                session.user.isOauth = token.isOauth;
             }
             return session
         }

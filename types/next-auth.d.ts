@@ -6,12 +6,14 @@ declare module 'next-auth'{
         _id?: string;
         role?: string;
         isTwoFactorEnabled?: boolean;
+        isOauth?: boolean;
     }
     interface Session{
         user:{
             _id?: string;
             role?: string;
             isTwoFactorEnabled?: boolean;
+            isOauth?: boolean;
         } & DefaultSession["user"]
         // Defaultsession includes name, email, image
     }
@@ -22,5 +24,6 @@ declare module 'next-auth/jwt'{
         _id?: string;
         role?: string;
         isTwoFactorEnabled?: boolean;
+        isOauth?: boolean;
     }
 }
