@@ -13,12 +13,14 @@ It supports:
 - 🔏 Passwords are **stored only for OAuth users**, not for credential users.
 
 ---
-## Workflow 
+## Workflow
+```bash
 1.OAuth Users: Users logging in with Google or GitHub are automatically marked as verified. No password is stored initially.
 2.Credentials Users: Must verify their email via a Gmail verification link before they can log in. Only after successful verification is the user allowed to set a password and access the app.
 3.JWT & Sessions: Fully handled via NextAuth.js (you can choose between jwt or database sessions).
 4.OTP/2FA: 2FA via email-based OTP is available and can be enabled per user. This adds an extra layer of security to the login process.
 5.Forgot Password: Users who forget their password can initiate a password reset flow.A Gmail verification link is sent to their email to securely update their password.
+```
 
 ## Tech Stack
 - **Next.js** (App Router)
